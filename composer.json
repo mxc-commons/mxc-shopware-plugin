@@ -1,0 +1,27 @@
+{
+	"name" : "mxc-commons/mxc-shopware-plugin",
+	"description" : "Generic Shopware plugin.",
+	"license" : "BSD-3-Clause",
+	"keywords" : [
+		"shopware",
+		"plugin",
+		"mxc-commons"
+	],
+	"support" : {
+		"docs" : "https://github.com/mxc-commons/mxc-shopware-plugin",
+		"issues" : "https://github.com/mxc-commons/mxc-shopware-plugin/issues",
+		"source" : "https://github.com/mxc-commons/mxc-shopware-plugin"
+	},
+	"require" : {
+		"php" : "^7.1",
+        "zendframework/zend-log" : "~2.10",
+        "zendframework/zend-eventmanager" : "~3.2",
+        "zendframework/zend-config" : "~3.2",
+        "mxc-commons/mxc-servicemanager" : "~1.0"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"Mxc\\Shopware\\Plugin\\" : "src/"
+		}
+	}
+}
