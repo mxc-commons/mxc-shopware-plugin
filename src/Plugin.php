@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: frank.hein
- * Date: 23.11.2018
- * Time: 20:41
- */
 
 namespace Mxc\Shopware\Plugin;
 
@@ -77,6 +71,7 @@ class Plugin extends Base
         $services->configure($config['services']);
         $services->setService('config', new Config($config));
         $services->setService('events', new EventManager());
+        $log = $services->get('logger');
 
         $subscribers = $config['doctrine']['listeners'] ?? [];
         if (count($subscribers) > 0) {
@@ -85,14 +80,15 @@ class Plugin extends Base
              */
             $evm = $services->get('modelManager')->getEventManager();
             $evm->addEventSubscriber($services->get(ModelSubscriber::class));
+            $log->info('ModelSubscriber was added');
         }
-        $services->get('logger')->info('Subscribers: ' . var_export($subscribers, true));
         foreach ($subscribers as $subscriber => $settings) {
             $model = $settings['model'];
             if (class_exists($model) && class_exists($subscriber)) {
                 $services->setFactory($subscriber, EntitySubscriberFactory::class);
                 // may move in future to allow lazy instantiation
                 $services->get($subscriber);
+                $log->info('Model Listener ' . $subscriber . ' added.');
             }
         }
 

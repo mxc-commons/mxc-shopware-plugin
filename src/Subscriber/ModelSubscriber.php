@@ -6,6 +6,7 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Proxy\Proxy;
+use Mxc\Shopware\Plugin\Service\LoggerInterface;
 use Zend\Config\Config;
 use Zend\EventManager\EventManagerAwareTrait;
 use Zend\EventManager\ResponseCollection;
@@ -15,16 +16,19 @@ class ModelSubscriber extends EventNameProvider implements EventSubscriber
     use EventManagerAwareTrait;
 
     protected $config;
-    protected $eventMap = [];
+    protected $eventMap = null;
+    protected $log;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, LoggerInterface $log)
     {
         $this->config = $config;
+        $this->log = $log;
     }
 
     public function getSubscribedEvents()
     {
-        return array_keys($this->getEventMap());
+        $events = array_keys($this->getEventMap());
+        return $events;
     }
 
     public function preRemove(LifecycleEventArgs $args) {
@@ -90,6 +94,7 @@ class ModelSubscriber extends EventNameProvider implements EventSubscriber
 
     protected function getEventMap() {
         if (null !== $this->eventMap) return $this->eventMap;
+        $this->eventMap = [];
         foreach ($this->config as $settings) {
             $model = $settings->model;
             $events = $settings->events ?? [];
@@ -106,6 +111,8 @@ class ModelSubscriber extends EventNameProvider implements EventSubscriber
          */
         $entityClass = $this->getEntityClass($args->getEntity());
         if ( ! isset($this->getEventMap()[$event][$entityClass])) return null;
+
+        $this->log->info('Triggering listener for ' . $entityClass);
 
         /**
          * @var ResponseCollection $result
