@@ -70,7 +70,8 @@ class Plugin extends Base
     public static function getServices() {
         if (self::$globalServices) return self::$globalServices;
         $services = new ServiceManager(self::$serviceConfig);
-        $config = Factory::fromFile(__DIR__ . '/../Config/plugin.config.php');
+        // @todo: This is not ok because it relies on a particular composer directory structure
+        $config = Factory::fromFile(__DIR__ . '/../../../../Config/plugin.config.php');
         $services->setAllowOverride(true);
         $services->configure($config['services']);
         $services->setService('config', new Config($config));
