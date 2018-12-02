@@ -4,8 +4,8 @@
   "license" : "BSD-3-Clause",
   "keywords" : [
     "shopware",
-	"plugin",
-	"mxc-commons"
+    "plugin",
+    "mxc-commons"
   ],
   "support" : {
     "docs" : "https://github.com/mxc-commons/mxc-shopware-plugin",
