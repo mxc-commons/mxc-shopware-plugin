@@ -11,9 +11,14 @@ class EntitySubscriber extends EventNameProvider {
      * @var LoggerInterface $log
      */
     protected $log;
+    /**
+     * @var EventManagerInterface $events
+     */
+    protected $events;
 
-    public function __construct(LoggerInterface $log) {
+    public function __construct(EventManagerInterface $events, LoggerInterface $log) {
         $this->log = $log;
+        $this->events = $events;
     }
 
     public function attach(EventManagerInterface $events, string $class, string $event, int $priority = 1) {

@@ -32,7 +32,7 @@ class Plugin extends Base
     /**
      * @var ServiceManager $services
      */
-    protected static $globalServices;
+    protected static $services;
 
     private static $serviceConfig = [
         'factories' => [
@@ -59,14 +59,14 @@ class Plugin extends Base
     ];
 
     /**
+     * @param string|null $path
      * @return ServiceManager
      */
-    public static function getServices() {
-        if (self::$globalServices) return self::$globalServices;
+    public static function getServices(string $path) {
+        if (self::$services) return self::$services;
         $services = new ServiceManager(self::$serviceConfig);
-
-        // @todo: This is not ok because it relies on a particular composer directory structure
-        $config = Factory::fromFile(__DIR__ . '/../../../../Config/plugin.config.php');
+        $path .= '/Config/plugin.config.php';
+        $config = Factory::fromFile($path);
         $services->setAllowOverride(true);
         $services->configure($config['services']);
         $services->setService('config', new Config($config));
@@ -85,7 +85,9 @@ class Plugin extends Base
         foreach ($subscribers as $subscriber => $settings) {
             $model = $settings['model'];
             if (class_exists($model) && class_exists($subscriber)) {
-                $services->setFactory($subscriber, EntitySubscriberFactory::class);
+                if (! $services->has($subscriber)) {
+                    $services->setFactory($subscriber, EntitySubscriberFactory::class);
+                }
                 // may move in future to allow lazy instantiation
                 $services->get($subscriber);
                 $log->info('Model Listener ' . $subscriber . ' added.');
@@ -93,8 +95,8 @@ class Plugin extends Base
         }
 
         $services->setAllowOverride(false);
-        self::$globalServices = $services;
-        return self::$globalServices;
+        self::$services = $services;
+        return self::$services;
     }
 
     /**
@@ -137,8 +139,8 @@ class Plugin extends Base
      * @param string $function
      * @param $param
      */
-    public static function trigger(Plugin $plugin, string $function, $param) {
-        $services = self::getServices();
+    private function trigger(Plugin $plugin, string $function, $param) {
+        $services = self::getServices($this->getPath());
         try {
             $services->setAllowOverride(true);
             $services->setService('plugin', $plugin);
@@ -159,21 +161,21 @@ class Plugin extends Base
 
     public function install(InstallContext $context)
     {
-        self::trigger($this, __FUNCTION__, $context);
+        $this->trigger($this, __FUNCTION__, $context);
     }
 
     public function uninstall(UninstallContext $context)
     {
-        self::trigger($this, __FUNCTION__, $context);
+        $this->trigger($this, __FUNCTION__, $context);
     }
 
     public function activate(ActivateContext $context)
     {
-        self::trigger($this, __FUNCTION__, $context);
+        $this->trigger($this, __FUNCTION__, $context);
     }
 
     public function deactivate(DeactivateContext $context)
     {
-        self::trigger($this, __FUNCTION__, $context);
+        $this->trigger($this, __FUNCTION__, $context);
     }
 }

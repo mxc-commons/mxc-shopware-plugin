@@ -22,7 +22,8 @@ class EntitySubscriberFactory implements FactoryInterface
          * @var EntitySubscriber $subscriber
          */
         $logger = $container->get('logger');
-        $subscriber = new $requestedName($logger);
+        $events = $container->get('events');
+        $subscriber = new $requestedName($events, $logger);
         $config = $container->get('config')->doctrine->listeners->$requestedName ?? new Config([]);
         $events = $container->get(ModelSubscriber::class)->getEventManager();
         $model = $config->model;
