@@ -18,6 +18,6 @@ class ActionListenerFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        return new $requestedName($container->get('config')->plugin->$requestedName ?? new Config([]));
+        return new $requestedName($container->get('config')->plugin->$requestedName ?? new Config([]), $container->get('logger'));
     }
 }
