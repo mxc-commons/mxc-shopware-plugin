@@ -4,15 +4,7 @@ namespace Mxc\Shopware\Plugin;
 
 use Interop\Container\ContainerInterface;
 use Mxc\Shopware\Plugin\Database\Database;
-use Mxc\Shopware\Plugin\Service\LoggerDelegatorFactory;
-use Mxc\Shopware\Plugin\Shopware\AttributeManagerFactory;
-use Mxc\Shopware\Plugin\Shopware\ConfigurationFactory;
-use Mxc\Shopware\Plugin\Shopware\DbalConnectionFactory;
-use Mxc\Shopware\Plugin\Shopware\MediaServiceFactory;
-use Mxc\Shopware\Plugin\Shopware\ModelManagerFactory;
-use Mxc\Shopware\Plugin\Subscriber\EntitySubscriberFactory;
-use Mxc\Shopware\Plugin\Subscriber\ModelSubscriber;
-use Mxc\Shopware\Plugin\Subscriber\ModelSubscriberFactory;
+use Mxc\Shopware\Plugin\Service\BootstrapTrait;
 use Shopware\Components\Plugin as Base;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
@@ -20,91 +12,18 @@ use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use Throwable;
 use Zend\Config\Config;
-use Zend\Config\Factory;
-use Zend\EventManager\EventManager;
 use Zend\EventManager\EventManagerInterface;
-use Zend\Log\Logger;
-use Zend\Log\LoggerServiceFactory;
-use Zend\ServiceManager\ServiceManager;
 
 class Plugin extends Base
 {
-    /**
-     * @var ServiceManager $services
-     */
-    protected static $services;
-
-    private static $serviceConfig = [
-        'factories' => [
-            // shopware service interface
-            'dbalConnection'            => DbalConnectionFactory::class,
-            'attributeManager'          => AttributeManagerFactory::class,
-            'mediaManager'              => MediaServiceFactory::class,
-            'modelManager'              => ModelManagerFactory::class,
-            'shopwareConfig'            => ConfigurationFactory::class,
-            ModelSubscriber::class      => ModelSubscriberFactory::class,
-
-            // services
-            Logger::class               => LoggerServiceFactory::class,
-
-        ],
-        'delegators' => [
-            Logger::class => [
-                LoggerDelegatorFactory::class,
-            ],
-        ],
-        'aliases' => [
-            'logger' => Logger::class,
-        ]
-    ];
-
-    /**
-     * @param string|null $path
-     * @return ServiceManager
-     */
-    public static function getServices(string $path) {
-        if (self::$services) return self::$services;
-        $services = new ServiceManager(self::$serviceConfig);
-        $path .= '/Config/plugin.config.php';
-        $config = Factory::fromFile($path);
-        $services->setAllowOverride(true);
-        $services->configure($config['services']);
-        $services->setService('config', new Config($config));
-        $services->setService('events', new EventManager());
-        $log = $services->get('logger');
-
-        $subscribers = $config['doctrine']['listeners'] ?? [];
-        if (count($subscribers) > 0) {
-            /**
-             * @var \Doctrine\Common\EventManager $evm
-             */
-            $evm = $services->get('modelManager')->getEventManager();
-            $evm->addEventSubscriber($services->get(ModelSubscriber::class));
-            $log->info('ModelSubscriber was added');
-        }
-        foreach ($subscribers as $subscriber => $settings) {
-            $model = $settings['model'];
-            if (class_exists($model) && class_exists($subscriber)) {
-                if (! $services->has($subscriber)) {
-                    $services->setFactory($subscriber, EntitySubscriberFactory::class);
-                }
-                // may move in future to allow lazy instantiation
-                $services->get($subscriber);
-                $log->info('Model Listener ' . $subscriber . ' added.');
-            }
-        }
-
-        $services->setAllowOverride(false);
-        self::$services = $services;
-        return self::$services;
-    }
+    use BootstrapTrait;
 
     /**
      * @param string $function
      * @param ContainerInterface $services
      * @return mixed|EventManagerInterface
      */
-    protected static function attachListeners(string $function, ContainerInterface $services) {
+    protected function attachListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
         $events = $services->get('events');
         $models = $config->doctrine->models ?? new Config([]);
@@ -140,11 +59,12 @@ class Plugin extends Base
      * @param $param
      */
     private function trigger(Plugin $plugin, string $function, $param) {
-        $services = self::getServices($this->getPath());
+        $services = $this->getServices();
         try {
             $services->setAllowOverride(true);
+            $services->setService('services', $services);
             $services->setService('plugin', $plugin);
-            $events = self::attachListeners($function, $services);
+            $events = $this->attachListeners($function, $services);
             $services->setAllowOverride(false);
             $events->triggerUntil(
                 function ($result) {
