@@ -5,13 +5,13 @@ namespace Mxc\Shopware\Plugin\Controller;
 use Enlight_Controller_Request_Request;
 use Enlight_Controller_Response_Response;
 use Interop\Container\ContainerInterface;
-use Mxc\Shopware\Plugin\Service\BootstrapTrait;
+use Mxc\Shopware\Plugin\Service\ServicesTrait;
 use Mxc\Shopware\Plugin\Service\LoggerInterface;
 use Shopware_Controllers_Backend_Application;
 
 class BackendApplicationController extends Shopware_Controllers_Backend_Application
 {
-    use BootstrapTrait;
+    use ServicesTrait;
     /**
      * @var LoggerInterface $log
      */
@@ -30,7 +30,7 @@ class BackendApplicationController extends Shopware_Controllers_Backend_Applicat
         Enlight_Controller_Request_Request $request,
         Enlight_Controller_Response_Response $response
     ) {
-        $this->services = $this->getServices();
+        $this->getServices();
         $this->log = $this->services->get('logger');
         parent::__construct($request, $response);
     }
