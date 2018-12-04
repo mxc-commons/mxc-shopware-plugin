@@ -15,13 +15,26 @@ use ReflectionClass;
 use Zend\Config\Config;
 use Zend\Config\Factory;
 use Zend\EventManager\EventManager;
+use Zend\Filter\StringToLower;
+use Zend\Filter\Word\CamelCaseToUnderscore;
+use Zend\Log\Logger;
+use Zend\Log\Formatter\Simple;
 use Zend\Log\LoggerServiceFactory;
 use Zend\ServiceManager\Factory\FactoryInterface;
 use Zend\ServiceManager\ServiceManager;
 
 class ServicesFactory implements FactoryInterface
 {
-    private static $serviceConfig = [
+    /**
+     * @var string $configPath
+     */
+    protected $configPath;
+    /**
+     * @var string $pluginName
+     */
+    protected $pluginName;
+
+    private $serviceConfig = [
         'factories' => [
             // shopware service interface
             'dbalConnection'            => DbalConnectionFactory::class,
@@ -45,10 +58,41 @@ class ServicesFactory implements FactoryInterface
         ]
     ];
 
-    /**
-     * @var string $configPath
-     */
-    protected $configPath;
+    protected function getLogFileName(string $pluginClass) {
+        $toUnderScore = new CamelCaseToUnderscore();
+        $toLowerCase = new StringToLower();
+        return ($toLowerCase->filter($toUnderScore->filter($pluginClass)));
+    }
+
+    protected function getLoggerConfig() {
+        return [
+            'writers' => [
+                'stream' => [
+                    'name' => 'stream',
+                    'priority'  => Logger::ALERT,
+                    'options'   => [
+                        'stream'    => Shopware()->DocPath() . 'var/log/' . $this->getLogFileName($this->pluginName) . '-' . date('Y-m-d') . '.log',
+                        'formatter' => [
+                            'name'      => Simple::class,
+                            'options'   => [
+                                'format'            => '%timestamp% %priorityName%: %message% %extra%',
+                                'dateTimeFormat'    => 'H:i:s',
+                            ],
+                        ],
+                        'filters' => [
+                            'priority' => [
+                                'name' => 'priority',
+                                'options' => [
+                                    'operator' => '<=',
+                                    'priority' => Logger::DEBUG,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
 
     protected function getConfigPath() {
         if (null === $this->configPath) {
@@ -57,11 +101,13 @@ class ServicesFactory implements FactoryInterface
             /** @noinspection PhpUnhandledExceptionInspection */
             $reflected = new ReflectionClass($class);
             $path = dirname($reflected->getFileName());
-            $pattern = 'web' . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR;
+            $pattern = Shopware()->DocPath() . 'custom/plugins/';
             $pos = strpos($path, $pattern);
-            if ($pos === false) return $this->configPath;
-            $pos = strpos($path, DIRECTORY_SEPARATOR, $pos + strlen($pattern));
-            if ($pos === false) return $this->configPath;
+            if ($pos !== 0) return $this->configPath; // error
+            $pLen = strlen($pattern);
+            $pos = strpos($path, DIRECTORY_SEPARATOR, $pLen);
+            if ($pos === false) return $this->configPath; // error
+            $this->pluginName = substr($path, $pLen, $pos - $pLen);
             $this->configPath = substr($path,0, $pos);
         }
         return $this->configPath;
@@ -77,9 +123,12 @@ class ServicesFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $services = new ServiceManager(self::$serviceConfig);
+        $services = new ServiceManager($this->serviceConfig);
         $path = $this->getConfigPath() . '/Config/plugin.config.php';
         $config = Factory::fromFile($path);
+        if (! isset($config['log'])) {
+            $config['log'] = $this->getLoggerConfig();
+        }
         $services->setAllowOverride(true);
         $services->configure($config['services']);
         $services->setService('config', new Config($config));
