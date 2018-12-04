@@ -4,7 +4,7 @@ namespace Mxc\Shopware\Plugin\Service;
 
 use Zend\ServiceManager\ServiceManager;
 
-trait BootstrapTrait
+trait ServicesTrait
 {
     /**
      * @var ServiceManager $services
