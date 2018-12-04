@@ -4,7 +4,7 @@ namespace Mxc\Shopware\Plugin;
 
 use Interop\Container\ContainerInterface;
 use Mxc\Shopware\Plugin\Database\Database;
-use Mxc\Shopware\Plugin\Service\BootstrapTrait;
+use Mxc\Shopware\Plugin\Service\ServicesTrait;
 use Shopware\Components\Plugin as Base;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
@@ -16,7 +16,7 @@ use Zend\EventManager\EventManagerInterface;
 
 class Plugin extends Base
 {
-    use BootstrapTrait;
+    use ServicesTrait;
 
     /**
      * @param string $function
@@ -40,6 +40,7 @@ class Plugin extends Base
             }
             $listeners[] = $services->get($service);
         }
+        // execute listeners in reverse order on uninstall and deactivate
         if ($function === 'uninstall' || $function === 'deactivate') {
             $listeners = array_reverse($listeners);
         }
