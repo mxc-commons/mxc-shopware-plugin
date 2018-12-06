@@ -113,11 +113,9 @@ class BackendApplicationController extends Shopware_Controllers_Backend_Applicat
     }
 
     protected function finalizeListQuery(QueryBuilder $builder) {
-        return $builder;
     }
 
     protected function finalizeDetailQuery(QueryBuilder $builder) {
-        return $builder;
     }
 
 }
