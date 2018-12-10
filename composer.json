@@ -18,7 +18,7 @@
     "zendframework/zend-eventmanager" : "~3.2",
     "zendframework/zend-filter" : "~2.8",
     "zendframework/zend-config" : "~3.2",
-    "mxc-commons/mxc-servicemanager" : "~1.0"
+    "mxc-commons/mxc-servicemanager" : "^1.1"
   },
   "autoload" : {
     "psr-4" : {
