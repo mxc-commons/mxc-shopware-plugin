@@ -61,7 +61,7 @@ class ServicesFactory implements FactoryInterface
     protected function getLogFileName(string $pluginClass) {
         $toUnderScore = new CamelCaseToUnderscore();
         $toLowerCase = new StringToLower();
-        return ($toLowerCase->filter($toUnderScore->filter($pluginClass)));
+        return ($toLowerCase($toUnderScore($pluginClass)));
     }
 
     protected function getLoggerConfig() {

@@ -10,6 +10,7 @@ use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
+use Shopware\Components\Plugin\Context\UpdateContext;
 use Throwable;
 use Zend\Config\Config;
 use Zend\EventManager\EventManagerInterface;
@@ -31,25 +32,17 @@ class Plugin extends Base
         if ($models) {
             $listeners[] = $services->get(Database::class);
         }
-        $listenerConfig = $config->plugin ?? new Config([]);
+        $listenerConfig = $config->plugin->toArray() ?? [];
+        // execute listeners in reverse order on uninstall and deactivate
+        if ($function === 'uninstall' || $function === 'deactivate') {
+            $listenerConfig = array_reverse($listenerConfig);
+        }
         foreach ($listenerConfig as $service => $_) {
-            $services->get('logger')->info('Adding listener: ' . $service);
             if (! $services->has($service)) {
                 /** @noinspection PhpUndefinedMethodInspection */
                 $services->setFactory($service, ActionListenerFactory::class);
             }
-            $listeners[] = $services->get($service);
-        }
-        // execute listeners in reverse order on uninstall and deactivate
-        if ($function === 'uninstall' || $function === 'deactivate') {
-            $listeners = array_reverse($listeners);
-        }
-        $priority = count($listeners) * 10 + 1;
-        foreach ($listeners as $listener) {
-            if (method_exists($listener, $function)) {
-                $events->attach($function, [$listener, $function], $priority);
-            }
-            $priority -= 10;
+            $services->get($service);
         }
         return $events;
     }
@@ -87,6 +80,10 @@ class Plugin extends Base
 
     public function uninstall(UninstallContext $context)
     {
+        $this->trigger($this, __FUNCTION__, $context);
+    }
+
+    public function update(UpdateContext $context) {
         $this->trigger($this, __FUNCTION__, $context);
     }
 
