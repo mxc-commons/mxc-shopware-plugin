@@ -33,7 +33,7 @@ class Plugin extends Base
             $listeners[] = $services->get(Database::class);
         }
         $listenerConfig = $config->plugin->toArray() ?? [];
-        // execute listeners in reverse order on uninstall and deactivate
+        // attach listeners in reverse order on uninstall and deactivate
         if ($function === 'uninstall' || $function === 'deactivate') {
             $listenerConfig = array_reverse($listenerConfig);
         }
@@ -42,7 +42,7 @@ class Plugin extends Base
                 /** @noinspection PhpUndefinedMethodInspection */
                 $services->setFactory($service, ActionListenerFactory::class);
             }
-            $services->get($service);
+            $services->get($service)->attach($events);
         }
         return $events;
     }
@@ -56,7 +56,6 @@ class Plugin extends Base
         $services = $this->getServices();
         try {
             $services->setAllowOverride(true);
-            $services->setService('services', $services);
             $services->setService('plugin', $plugin);
             $events = $this->attachListeners($function, $services);
             $services->setAllowOverride(false);

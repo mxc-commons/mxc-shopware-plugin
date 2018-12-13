@@ -9,12 +9,6 @@ use Exception;
 
 class ActionListenerFactory implements FactoryInterface
 {
-    protected function createObject(ContainerInterface $container, $requestedName, array $options = null) {
-        $config = $container->get('config')->plugin->$requestedName ?? new Config([]);
-        $logger = $container->get('logger');
-        return new $requestedName($config, $logger);
-    }
-
     /**
      * Create an object
      *
@@ -26,11 +20,9 @@ class ActionListenerFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $events = $container->get('events');
-        /**
-         * @var ActionListener $listener
-         */
-        $listener = $this->createObject($container, $requestedName, $options);
+        $config = $container->get('config')->plugin->$requestedName ?? new Config([]);
+        $logger = $container->get('logger');
+        $listener =  new $requestedName($config, $logger);
         if (! $listener instanceof ActionListener) {
             /** @noinspection PhpUnhandledExceptionInspection */
             throw new Exception(sprintf(
@@ -39,7 +31,6 @@ class ActionListenerFactory implements FactoryInterface
                 is_object($listener) ? get_class($listener) : gettype($listener))
             );
         }
-        $listener->attach($events);
         return $listener;
     }
 }
