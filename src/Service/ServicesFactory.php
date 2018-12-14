@@ -4,6 +4,7 @@ namespace Mxc\Shopware\Plugin\Service;
 
 use Interop\Container\ContainerInterface;
 use Mxc\Shopware\Plugin\Shopware\AttributeManagerFactory;
+use Mxc\Shopware\Plugin\Shopware\AuthServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ConfigurationFactory;
 use Mxc\Shopware\Plugin\Shopware\DbalConnectionFactory;
 use Mxc\Shopware\Plugin\Shopware\MediaServiceFactory;
@@ -42,6 +43,7 @@ class ServicesFactory implements FactoryInterface
             'mediaManager'              => MediaServiceFactory::class,
             'modelManager'              => ModelManagerFactory::class,
             'shopwareConfig'            => ConfigurationFactory::class,
+            'authService'               => AuthServiceFactory::class,
             ModelSubscriber::class      => ModelSubscriberFactory::class,
 
             // services
