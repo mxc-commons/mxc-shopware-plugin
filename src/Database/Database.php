@@ -4,12 +4,13 @@ namespace Mxc\Shopware\Plugin\Database;
 
 use Exception;
 use Doctrine\ORM\Tools\SchemaTool;
+use Mxc\Shopware\Plugin\ActionListener;
 use Mxc\Shopware\Plugin\Service\LoggerInterface;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
 use Shopware\Components\Model\ModelManager;
 use Zend\EventManager\EventInterface;
 
-class Database
+class Database extends ActionListener
 {
     /**
      * @var ModelManager $modelManager

@@ -27,17 +27,16 @@ class Plugin extends Base
     protected function attachListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
         $events = $services->get('events');
-        $models = $config->doctrine->models ?? new Config([]);
-        $listeners = [];
-        if ($models) {
-            $listeners[] = $services->get(Database::class);
+        $listeners = isset($config->doctrine->models) ? new Config([Database::class => []]) : new Config([]);
+        if (isset($config->plugin)) {
+            $listeners->merge($config->plugin);
         }
-        $listenerConfig = $config->plugin->toArray() ?? [];
+        $listeners = $listeners->toArray();
         // attach listeners in reverse order on uninstall and deactivate
         if ($function === 'uninstall' || $function === 'deactivate') {
-            $listenerConfig = array_reverse($listenerConfig);
+            $listeners = array_reverse($listeners);
         }
-        foreach ($listenerConfig as $service => $_) {
+        foreach ($listeners as $service => $_) {
             if (! $services->has($service)) {
                 /** @noinspection PhpUndefinedMethodInspection */
                 $services->setFactory($service, ActionListenerFactory::class);
