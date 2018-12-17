@@ -18,7 +18,8 @@
     "zendframework/zend-eventmanager" : "~3.2",
     "zendframework/zend-filter" : "~2.8",
     "zendframework/zend-config" : "~3.2",
-    "mxc-commons/mxc-servicemanager" : "^1.1"
+    "mxc-commons/mxc-servicemanager" : "^1.1",
+    "shopware/shopware" : "^5.5"
   },
   "autoload" : {
     "psr-4" : {

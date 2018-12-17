@@ -49,6 +49,7 @@ class Database extends ActionListener
     // unique MxcDropShipInnocigs attribute name prefix
     const ATTR_PREFIX = 'mxc_ds_inno_';
 
+    /** @noinspection PhpMissingParentConstructorInspection */
     /**
      * @param array $models
      * @param array $attributes
