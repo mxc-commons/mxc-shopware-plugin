@@ -3,7 +3,7 @@
 namespace Mxc\Shopware\Plugin;
 
 use Interop\Container\ContainerInterface;
-use Mxc\Shopware\Plugin\Database\Database;
+use Mxc\Shopware\Plugin\Database\SchemaManager;
 use Mxc\Shopware\Plugin\Service\ServicesTrait;
 use Shopware\Components\Plugin as Base;
 use Shopware\Components\Plugin\Context\ActivateContext;
@@ -27,7 +27,7 @@ class Plugin extends Base
     protected function attachListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
         $events = $services->get('events');
-        $listeners = isset($config->doctrine->models) ? new Config([Database::class => []]) : new Config([]);
+        $listeners = isset($config->doctrine->models) ? new Config([SchemaManager::class => []]) : new Config([]);
         if (isset($config->plugin)) {
             $listeners->merge($config->plugin);
         }

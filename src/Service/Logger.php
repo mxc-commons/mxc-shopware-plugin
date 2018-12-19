@@ -19,9 +19,33 @@ class Logger implements LoggerInterface
      * @var \Zend\Log\Logger $log
      */
     protected $log;
+    /**
+     * @var int $indent
+     */
+    protected $indent = 0;
 
-    public function __construct(BaseLogger $log) {
+    /**
+     * @var int $indentSize
+     */
+    protected $indentSize;
+    /**
+     * @var string $enterMarker
+     */
+    protected $enterMarker;
+    /**
+     * @var string $leaveMarker
+     */
+    protected $leaveMarker;
+
+    public function __construct(BaseLogger $log, int $indentSize = 1, string $enterMarker = '>>-->', string $leaveMarker = '<--<<') {
         $this->log = $log;
+        $this->indentSize = $indentSize;
+        $this->enterMarker = $enterMarker;
+        $this->leaveMarker = $leaveMarker;
+    }
+
+    protected function indentMessage(string $msg) {
+        return str_repeat(' ', $this->indent) . $msg;
     }
 
     /**
@@ -31,7 +55,7 @@ class Logger implements LoggerInterface
      */
     public function emerg($message, $extra = [])
     {
-        $this->log->emerg($message, $extra);
+        $this->log->emerg($this->indentMessage($message), $extra);
         return $this;
     }
 
@@ -42,7 +66,7 @@ class Logger implements LoggerInterface
      */
     public function alert($message, $extra = [])
     {
-        $this->log->alert($message, $extra);
+        $this->log->alert($this->indentMessage($message), $extra);
         return $this;
     }
 
@@ -53,7 +77,7 @@ class Logger implements LoggerInterface
      */
     public function crit($message, $extra = [])
     {
-        $this->log->crit($message, $extra);
+        $this->log->crit($this->indentMessage($message), $extra);
         return $this;
     }
 
@@ -64,7 +88,7 @@ class Logger implements LoggerInterface
      */
     public function err($message, $extra = [])
     {
-        $this->log->err($message, $extra);
+        $this->log->err($this->indentMessage($message), $extra);
         return $this;
     }
 
@@ -75,7 +99,7 @@ class Logger implements LoggerInterface
      */
     public function warn($message, $extra = [])
     {
-        $this->log->warn($message, $extra);
+        $this->log->warn($this->indentMessage($message), $extra);
         return $this;
     }
 
@@ -86,7 +110,7 @@ class Logger implements LoggerInterface
      */
     public function notice($message, $extra = [])
     {
-        $this->log->notice($message, $extra);
+        $this->log->notice($this->indentMessage($message), $extra);
         return $this;
     }
 
@@ -97,7 +121,7 @@ class Logger implements LoggerInterface
      */
     public function info($message, $extra = [])
     {
-        $this->log->info($message, $extra);
+        $this->log->info($this->indentMessage($message), $extra);
         return $this;
     }
 
@@ -108,30 +132,34 @@ class Logger implements LoggerInterface
      */
     public function debug($message, $extra = [])
     {
-        $this->log->debug($message, $extra);
+        $this->log->debug($this->indentMessage($message), $extra);
         return $this;
     }
 
     public function enter() {
-        return $this->logAction(true);
+        $result = $this->logAction($this->enterMarker);
+        $this->indent += $this->indentSize;
+        return $result;
     }
 
     public function leave() {
-        return $this->logAction(false);
+        $this->indent -= $this->indentSize;
+        $this->indent = max($this->indent, 0);
+        $result = $this->logAction($this->leaveMarker);
+        return $result;
     }
 
     public function except(Throwable $e, bool $logTrace = true, bool $rethrow = true) {
-        $this->log->emerg(sprintf('%s: %s', get_class($e), $e->getMessage()));
-        if ($logTrace) $this->log->emerg('Call stack: ' . PHP_EOL . $e->getTraceAsString());
+        $this->emerg(sprintf('%s: %s', get_class($e), $e->getMessage()));
+        if ($logTrace) $this->emerg('Call stack: ' . PHP_EOL . $e->getTraceAsString());
         if ($rethrow)
             /** @noinspection PhpUnhandledExceptionInspection */
             throw($e);
         return $this;
     }
 
-    protected function logAction(bool $start = true) {
-        $marker = $start ? '>>> ' : '<<< ';
+    protected function logAction(string $marker = '') {
         $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 3)[2];
-        $this->log->debug(sprintf('%s %s#%s', $marker, $trace['class'], $trace['function']));
+        $this->debug(sprintf('%s %s#%s', $marker, $trace['class'], $trace['function']));
     }
 }

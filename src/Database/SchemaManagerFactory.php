@@ -4,10 +4,9 @@ namespace Mxc\Shopware\Plugin\Database;
 
 use Interop\Container\ContainerInterface;
 use Zend\Config\Config;
-use Zend\Log\Logger;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-class DatabaseFactory implements FactoryInterface
+class SchemaManagerFactory implements FactoryInterface
 {
     /**
      * Create an object
@@ -25,13 +24,13 @@ class DatabaseFactory implements FactoryInterface
         $config = $container->get('config');
         $models = $config->doctrine->models ?? new Config([]);
         $attributes = $config->doctrine->attributes ?? new Config([]);
-        $entityManager = $container->get('modelManager');
+        $modelManager = $container->get('modelManager');
         $attributeManager = $container->get('attributeManager');
-        $logger = $container->get(Logger::class);
-        return new Database(
+        $logger = $container->get('logger');
+        return new SchemaManager(
             $models->toArray(),
             $attributes->toArray(),
-            $entityManager,
+            $modelManager,
             $attributeManager,
             $logger);
     }

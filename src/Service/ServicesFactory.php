@@ -3,6 +3,7 @@
 namespace Mxc\Shopware\Plugin\Service;
 
 use Interop\Container\ContainerInterface;
+use Mxc\Shopware\Plugin\Database\SchemaManager;
 use Mxc\Shopware\Plugin\Shopware\AttributeManagerFactory;
 use Mxc\Shopware\Plugin\Shopware\AuthServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ConfigurationFactory;
@@ -11,15 +12,14 @@ use Mxc\Shopware\Plugin\Shopware\MediaServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ModelManagerFactory;
 use Mxc\Shopware\Plugin\Subscriber\EntitySubscriberFactory;
 use Mxc\Shopware\Plugin\Subscriber\ModelSubscriber;
-use Mxc\Shopware\Plugin\Subscriber\ModelSubscriberFactory;
 use ReflectionClass;
 use Zend\Config\Config;
 use Zend\Config\Factory;
 use Zend\EventManager\EventManager;
 use Zend\Filter\StringToLower;
 use Zend\Filter\Word\CamelCaseToUnderscore;
-use Zend\Log\Logger;
 use Zend\Log\Formatter\Simple;
+use Zend\Log\Logger;
 use Zend\Log\LoggerServiceFactory;
 use Zend\ServiceManager\Factory\FactoryInterface;
 use Zend\ServiceManager\ServiceManager;
@@ -44,11 +44,14 @@ class ServicesFactory implements FactoryInterface
             'modelManager'              => ModelManagerFactory::class,
             'shopwareConfig'            => ConfigurationFactory::class,
             'authService'               => AuthServiceFactory::class,
-            ModelSubscriber::class      => ModelSubscriberFactory::class,
 
             // services
             Logger::class               => LoggerServiceFactory::class,
 
+        ],
+        'magicals' => [
+            ModelSubscriber::class,
+            SchemaManager::class
         ],
         'delegators' => [
             Logger::class => [
