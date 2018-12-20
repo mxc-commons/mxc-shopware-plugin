@@ -37,7 +37,7 @@ class Logger implements LoggerInterface
      */
     protected $leaveMarker;
 
-    public function __construct(BaseLogger $log, int $indentSize = 1, string $enterMarker = '>>-->', string $leaveMarker = '<--<<') {
+    public function __construct(BaseLogger $log, int $indentSize = 1, string $enterMarker = '>>>', string $leaveMarker = '<<<') {
         $this->log = $log;
         $this->indentSize = $indentSize;
         $this->enterMarker = $enterMarker;

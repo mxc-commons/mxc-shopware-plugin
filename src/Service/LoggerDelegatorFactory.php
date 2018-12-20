@@ -21,8 +21,8 @@ class LoggerDelegatorFactory implements DelegatorFactoryInterface
     {
         $logger = $callback();
         $config = $container->get('config')->log ?? new Config([]);
-        $enterMarker = $config->enterMarker ?? '>>->';
-        $leaveMarker = $config->leaveMarker ?? '<--<<';
+        $enterMarker = $config->enterMarker ?? '>>>';
+        $leaveMarker = $config->leaveMarker ?? '<<<';
         $indent = $config->indent ?? 1;
         return new Logger($logger, $indent, $enterMarker, $leaveMarker);
     }
