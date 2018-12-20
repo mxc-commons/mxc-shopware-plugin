@@ -149,6 +149,13 @@ class SchemaManager extends ActionListener
      */
     public function install(/** @noinspection PhpUnusedParameterInspection */ EventInterface $e) {
         $this->log->enter();
+        $result =  $this->create();
+        $this->log->leave();
+        return true;
+    }
+
+    public function create() {
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->updateAttributes();
         $metaData = [];
         foreach ($this->models as $model) {
@@ -159,8 +166,13 @@ class SchemaManager extends ActionListener
             $metaData,
             true
         );
-        $this->log->leave();
-        return true;
+    }
+
+    public function drop() {
+        $this->schemaTool->dropSchema(
+            $this->getDropSchemaMetaData()
+        );
+        $this->deleteAttributes();
     }
 
     /**
@@ -173,10 +185,7 @@ class SchemaManager extends ActionListener
         $context = $e->getParam('context');
 
         if (! $context->keepUserData()) {
-            $this->schemaTool->dropSchema(
-                $this->getDropSchemaMetaData()
-            );
-            $this->deleteAttributes();
+            $this->drop();
         }
 
         $this->log->leave();
