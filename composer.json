@@ -17,6 +17,7 @@
     "zendframework/zend-log" : "~2.10",
     "zendframework/zend-eventmanager" : "~3.2",
     "zendframework/zend-config" : "~3.2",
+    "zendframework/zend-filter": "^2.9",
     "mxc-commons/mxc-servicemanager" : "^1.1"
   },
   "autoload" : {
