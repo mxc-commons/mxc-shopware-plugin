@@ -149,7 +149,7 @@ class SchemaManager extends ActionListener
      */
     public function install(/** @noinspection PhpUnusedParameterInspection */ EventInterface $e) {
         $this->log->enter();
-        $result =  $this->create();
+        $this->create();
         $this->log->leave();
         return true;
     }
