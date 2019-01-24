@@ -7,22 +7,24 @@ use Zend\EventManager\EventInterface;
 use Zend\EventManager\EventManagerInterface;
 
 class EntitySubscriber extends EventNameProvider {
-    /**
-     * @var LoggerInterface $log
-     */
+
+    /** @var LoggerInterface $log */
     protected $log;
-    /**
-     * @var EventManagerInterface $events
-     */
+
+    /** @var EventManagerInterface $events */
     protected $events;
 
-    public function __construct(EventManagerInterface $events, LoggerInterface $log) {
+    /** @var string $model */
+    protected $model;
+
+    public function __construct(EventManagerInterface $events, string $model, LoggerInterface $log) {
         $this->log = $log;
         $this->events = $events;
+        $this->model = $model;
     }
 
-    public function attach(EventManagerInterface $events, string $class, string $event, int $priority = 1) {
-        $events->attach($this->getEventName($class, $event), [$this, $event], $priority);
+    public function attach(EventManagerInterface $events, string $event, int $priority = 1) {
+        $events->attach($this->getEventName($this->model, $event), [$this, $event], $priority);
     }
 
     protected function notImplemented($event) {
