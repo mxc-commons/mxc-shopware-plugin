@@ -112,8 +112,6 @@ class ModelSubscriber extends EventNameProvider implements EventSubscriber
         $entityClass = $this->getEntityClass($args->getEntity());
         if ( ! isset($this->getEventMap()[$event][$entityClass])) return null;
 
-        $this->log->info('Triggering listener for ' . $entityClass);
-
         /**
          * @var ResponseCollection $result
          */
