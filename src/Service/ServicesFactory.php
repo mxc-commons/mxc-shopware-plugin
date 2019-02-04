@@ -10,8 +10,6 @@ use Mxc\Shopware\Plugin\Shopware\ConfigurationFactory;
 use Mxc\Shopware\Plugin\Shopware\DbalConnectionFactory;
 use Mxc\Shopware\Plugin\Shopware\MediaServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ModelManagerFactory;
-use Mxc\Shopware\Plugin\Subscriber\EntitySubscriberFactory;
-use Mxc\Shopware\Plugin\Subscriber\ModelSubscriber;
 use ReflectionClass;
 use Zend\Config\Config;
 use Zend\Config\Factory;
@@ -50,7 +48,6 @@ class ServicesFactory implements FactoryInterface
 
         ],
         'magicals' => [
-            ModelSubscriber::class,
             SchemaManager::class
         ],
         'delegators' => [
@@ -139,28 +136,6 @@ class ServicesFactory implements FactoryInterface
         $services->setService('config', new Config($config));
         $services->setService('events', new EventManager());
         $services->setService('services', $services);
-        $log = $services->get('logger');
-
-        $subscribers = $config['doctrine']['listeners'] ?? [];
-        if (count($subscribers) > 0) {
-            /**
-             * @var \Doctrine\Common\EventManager $evm
-             */
-            $evm = $services->get('modelManager')->getEventManager();
-            $evm->addEventSubscriber($services->get(ModelSubscriber::class));
-            $log->info('ModelSubscriber was added');
-        }
-        foreach ($subscribers as $subscriber => $settings) {
-            $model = $settings['model'];
-            if (class_exists($model) && class_exists($subscriber)) {
-                if (! $services->has($subscriber)) {
-                    $services->setFactory($subscriber, EntitySubscriberFactory::class);
-                }
-                // may move in future to allow lazy instantiation
-                $services->get($subscriber);
-                $log->info('Model Listener ' . $subscriber . ' added.');
-            }
-        }
         $services->setAllowOverride(false);
         return $services;
     }
