@@ -55,13 +55,7 @@ class BulkOperation
             $builder->set($key, "?$i");
             $builder->setParameter($i, $value);
         }
-        $query = $builder->getQuery();
-        $this->log->debug(sprintf('%s#%s: Update query: [%s]',
-            __CLASS__,
-            __FUNCTION__,
-            $query->getDQL()
-        ));
-        $query->execute();
+        $query = $builder->getQuery()->execute();
     }
 
     protected function getAliasedKey(string $alias, string $key)
