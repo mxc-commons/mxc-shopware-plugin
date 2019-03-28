@@ -25,16 +25,6 @@ abstract class ActionListener implements ListenerAggregateInterface {
         $this->log = $log;
     }
 
-    protected function getOptions() {
-        $function = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
-        /** @noinspection PhpUndefinedFieldInspection */
-        $options = $this->config->options->$function ?? new Config([]);;
-        /** @noinspection PhpUndefinedFieldInspection */
-        $general = $this->config->general ?? new Config([]);
-        $options->merge($general);
-        return $options;
-    }
-
     public function attach(EventManagerInterface $events, $priority = 1)
     {
         if (method_exists($this, 'install')) {
