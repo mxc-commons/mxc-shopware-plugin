@@ -2,8 +2,6 @@
 
 namespace Mxc\Shopware\Plugin;
 
-use Mxc\Shopware\Plugin\Service\LoggerInterface;
-use Zend\Config\Config;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
 use Zend\EventManager\ListenerAggregateTrait;
@@ -11,19 +9,6 @@ use Zend\EventManager\ListenerAggregateTrait;
 abstract class ActionListener implements ListenerAggregateInterface {
 
     use ListenerAggregateTrait;
-    /**
-     * @var Config $config
-     */
-    protected $config;
-    /**
-     * @var LoggerInterface $log
-     */
-    protected $log;
-
-    public function __construct(Config $config, LoggerInterface $log) {
-        $this->config = $config;
-        $this->log = $log;
-    }
 
     public function attach(EventManagerInterface $events, $priority = 1)
     {

@@ -2,10 +2,9 @@
 
 namespace Mxc\Shopware\Plugin;
 
-use Interop\Container\ContainerInterface;
-use Zend\Config\Config;
-use Zend\ServiceManager\Factory\FactoryInterface;
 use Exception;
+use Interop\Container\ContainerInterface;
+use Zend\ServiceManager\Factory\FactoryInterface;
 
 class ActionListenerFactory implements FactoryInterface
 {
@@ -20,9 +19,7 @@ class ActionListenerFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $config = $container->get('config')->plugin->$requestedName ?? new Config([]);
-        $logger = $container->get('logger');
-        $listener =  new $requestedName($config, $logger);
+        $listener =  new $requestedName();
         if (! $listener instanceof ActionListener) {
             /** @noinspection PhpUnhandledExceptionInspection */
             throw new Exception(sprintf(

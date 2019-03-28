@@ -27,7 +27,7 @@ class Plugin extends Base
     protected function attachListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
         $events = $services->get('events');
-        $listeners = isset($config->doctrine->models) ? new Config([SchemaManager::class => []]) : new Config([]);
+        $listeners = isset($config->doctrine->models) ? new Config([SchemaManager::class]) : new Config([]);
         if (isset($config->plugin)) {
             $listeners->merge($config->plugin);
         }
@@ -36,7 +36,7 @@ class Plugin extends Base
         if ($function === 'uninstall' || $function === 'deactivate') {
             $listeners = array_reverse($listeners);
         }
-        foreach ($listeners as $service => $_) {
+        foreach ($listeners as $service) {
             if (! $services->has($service)) {
                 /** @noinspection PhpUndefinedMethodInspection */
                 $services->setFactory($service, ActionListenerFactory::class);
