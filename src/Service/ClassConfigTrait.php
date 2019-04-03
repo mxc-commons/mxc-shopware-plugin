@@ -11,7 +11,7 @@ trait ClassConfigTrait
     {
         $config = $container->get('config');
         if ($config->class_config) {
-            return $config->class_config->$class;
+            return $config->class_config->$class ?? new Config([]);
         }
         return new Config([]);
     }
