@@ -16,7 +16,7 @@ use Zend\Log\Logger as BaseLogger;
 class Logger implements LoggerInterface
 {
     /**
-     * @var \Zend\Log\Logger $log
+     * @var BaseLogger $log
      */
     protected $log;
     /**

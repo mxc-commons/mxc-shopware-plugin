@@ -2,6 +2,8 @@
 
 namespace Mxc\Shopware\Plugin\Database;
 
+use Doctrine\Common\Cache\CacheProvider;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
 use Mxc\Shopware\Plugin\ActionListener;
@@ -23,7 +25,7 @@ class SchemaManager extends ActionListener
     protected $attributeService;
 
     /**
-     * @var \Doctrine\Common\Cache\CacheProvider $metaDataCache
+     * @var CacheProvider $metaDataCache
      */
     protected $metaDataCache;
 
@@ -100,7 +102,7 @@ class SchemaManager extends ActionListener
     /**
      * Truncate one or more Doctrine managed tables
      * @param array $models
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function truncateTable(array $models) {
         $connection = $this->modelManager->getConnection();
@@ -120,7 +122,7 @@ class SchemaManager extends ActionListener
     /**
      * Delete the attributes defined in the §attributes member from the database schema
      */
-    protected function deleteAttributes() {
+    protected function dropAttributes() {
         foreach ($this->attributes as $table => $attributes) {
             $names = array_keys($attributes);
             foreach ($names as $name) {
@@ -154,9 +156,8 @@ class SchemaManager extends ActionListener
         return true;
     }
 
-    public function create() {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $this->updateAttributes();
+    public function updateSchema()
+    {
         $metaData = [];
         foreach ($this->models as $model) {
             $metaData[] = $this->modelManager->getClassMetadata($model);
@@ -168,11 +169,17 @@ class SchemaManager extends ActionListener
         );
     }
 
+    public function create() {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $this->updateAttributes();
+        $this->updateSchema();
+    }
+
     public function drop() {
         $this->schemaTool->dropSchema(
             $this->getDropSchemaMetaData()
         );
-        $this->deleteAttributes();
+        $this->dropAttributes();
     }
 
     /**

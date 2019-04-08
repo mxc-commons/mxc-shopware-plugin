@@ -55,7 +55,7 @@ class BulkOperation
             $builder->set($key, "?$i");
             $builder->setParameter($i, $value);
         }
-        $query = $builder->getQuery()->execute();
+        $builder->getQuery()->execute();
     }
 
     protected function getAliasedKey(string $alias, string $key)

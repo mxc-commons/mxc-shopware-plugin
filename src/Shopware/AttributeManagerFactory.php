@@ -11,7 +11,7 @@ class AttributeManagerFactory implements FactoryInterface
     /**
      * Create an object
      *
-     * @param  \Interop\Container\ContainerInterface $container
+     * @param ContainerInterface $container
      * @param  string $requestedName
      * @param  null|array $options
      * @return object
