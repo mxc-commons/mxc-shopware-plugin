@@ -11,7 +11,6 @@ use Mxc\Shopware\Plugin\Shopware\DbalConnectionFactory;
 use Mxc\Shopware\Plugin\Shopware\MediaServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ModelManagerFactory;
 use ReflectionClass;
-use Zend\Config\Config;
 use Zend\Config\Factory;
 use Zend\EventManager\EventManager;
 use Zend\Filter\StringToLower;
@@ -112,7 +111,7 @@ class ServicesFactory implements FactoryInterface
             $this->pluginName = substr($path, $pLen, $pos - $pLen);
             $this->configPath = substr($path,0, $pos);
         }
-        return $this->configPath;
+        return $this->configPath . '/Config';
     }
 
     /**
@@ -126,14 +125,17 @@ class ServicesFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $services = new ServiceManager($this->serviceConfig);
-        $path = $this->getConfigPath() . '/Config/plugin.config.php';
-        $config = Factory::fromFile($path);
+        $path = $this->getConfigPath();
+        $pluginConfigFile = $path . '/plugin.config.php';
+
+        $config = Factory::fromFile($pluginConfigFile);
+        $config['plugin_config_path'] = $path;
         if (! isset($config['log'])) {
             $config['log'] = $this->getLoggerConfig();
         }
         $services->setAllowOverride(true);
         $services->configure($config['services']);
-        $services->setService('config', new Config($config));
+        $services->setService('config', $config);
         $services->setService('events', new EventManager());
         $services->setService('services', $services);
         $services->setAllowOverride(false);

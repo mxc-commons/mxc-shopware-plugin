@@ -27,8 +27,8 @@ class Plugin extends Base
     protected function attachListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
         $events = $services->get('events');
-        $listeners = isset($config->doctrine->models) ? new Config([SchemaManager::class]) : new Config([]);
-        if (isset($config->plugin)) {
+        $listeners = isset($config['doctrine']['models']) ? new Config([SchemaManager::class]) : new Config([]);
+        if (isset($config['plugin'])) {
             $listeners->merge($config->plugin);
         }
         $listeners = $listeners->toArray();

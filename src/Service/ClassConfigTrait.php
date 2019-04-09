@@ -3,7 +3,6 @@
 namespace Mxc\Shopware\Plugin\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\Config\Factory;
 
 trait ClassConfigTrait
 {
@@ -16,8 +15,10 @@ trait ClassConfigTrait
         if (! $config) return [];
 
         if (is_string($config)) {
-            if (! file_exists($config)) return [];
-            return Factory::fromFile($config);
+            $pluginConfigPath = $container->get('config')['plugin_config_path'];
+            $configFile = $pluginConfigPath . '/' . $config;
+            if (! file_exists($configFile)) return [];
+            $config = include $configFile;
         }
 
         if (! is_array($config)) return [];

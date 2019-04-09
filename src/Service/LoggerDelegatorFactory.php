@@ -3,7 +3,6 @@
 namespace Mxc\Shopware\Plugin\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\Config\Config;
 use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
 
 class LoggerDelegatorFactory implements DelegatorFactoryInterface
@@ -20,10 +19,10 @@ class LoggerDelegatorFactory implements DelegatorFactoryInterface
     public function __invoke(ContainerInterface $container, $name, callable $callback, array $options = null)
     {
         $logger = $callback();
-        $config = $container->get('config')->log ?? new Config([]);
-        $enterMarker = $config->enterMarker ?? '>>>';
-        $leaveMarker = $config->leaveMarker ?? '<<<';
-        $indent = $config->indent ?? 1;
+        $config = $container->get('config')['log'] ?? [];
+        $enterMarker = $config['enterMarker'] ?? '>>>';
+        $leaveMarker = $config['leaveMarker'] ?? '<<<';
+        $indent = $config['indent'] ?? 1;
         return new Logger($logger, $indent, $enterMarker, $leaveMarker);
     }
 }
