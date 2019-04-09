@@ -3,16 +3,25 @@
 namespace Mxc\Shopware\Plugin\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\Config\Config;
+use Zend\Config\Factory;
 
 trait ClassConfigTrait
 {
-    protected function getClassConfig(ContainerInterface $container, string $class)
+    protected function getClassConfig(ContainerInterface $container, string $class): array
     {
-        $config = $container->get('config');
-        if ($config->class_config) {
-            return $config->class_config->$class ?? new Config([]);
+        $config = $container->get('config')['class_config'];
+        if (! $config) return [];
+
+        $config = $config[$class];
+        if (! $config) return [];
+
+        if (is_string($config)) {
+            if (! file_exists($config)) return [];
+            return Factory::fromFile($config);
         }
-        return new Config([]);
+
+        if (! is_array($config)) return [];
+
+        return $config;
     }
 }
