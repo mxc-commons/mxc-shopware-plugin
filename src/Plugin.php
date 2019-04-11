@@ -12,7 +12,6 @@ use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Plugin\Context\UpdateContext;
 use Throwable;
-use Zend\Config\Config;
 use Zend\EventManager\EventManagerInterface;
 
 class Plugin extends Base
@@ -27,11 +26,11 @@ class Plugin extends Base
     protected function attachListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
         $events = $services->get('events');
-        $listeners = isset($config['doctrine']['models']) ? new Config([SchemaManager::class]) : new Config([]);
-        if (isset($config['plugin'])) {
-            $listeners->merge($config->plugin);
+        $listeners = isset($config['doctrine']['models']) ? [SchemaManager::class]: [];
+        $addlListeners = $config['plugin'] ?? [];
+        foreach ($addlListeners as $listener) {
+            $listeners[] = $listener;
         }
-        $listeners = $listeners->toArray();
         // attach listeners in reverse order on uninstall and deactivate
         if ($function === 'uninstall' || $function === 'deactivate') {
             $listeners = array_reverse($listeners);

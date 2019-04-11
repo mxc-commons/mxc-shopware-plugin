@@ -127,14 +127,13 @@ class ServicesFactory implements FactoryInterface
         $services = new ServiceManager($this->serviceConfig);
         $path = $this->getConfigPath();
         $pluginConfigFile = $path . '/plugin.config.php';
-
-        $config = Factory::fromFile($pluginConfigFile);
+        $config = file_exists($pluginConfigFile) ? Factory::fromFile($pluginConfigFile) : [];
         $config['plugin_config_path'] = $path;
         if (! isset($config['log'])) {
             $config['log'] = $this->getLoggerConfig();
         }
         $services->setAllowOverride(true);
-        $services->configure($config['services']);
+        $services->configure($config['services'] ?? []);
         $services->setService('config', $config);
         $services->setService('events', new EventManager());
         $services->setService('services', $services);
