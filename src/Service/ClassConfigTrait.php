@@ -8,11 +8,9 @@ trait ClassConfigTrait
 {
     protected function getClassConfig(ContainerInterface $container, string $class): array
     {
-        $config = $container->get('config')['class_config'];
-        if (! $config) return [];
+        $config = $container->get('config');
+        $config = $config['class_config']['class'] ?? [];
 
-        $config = $config[$class];
-        if (! $config) return [];
 
         if (is_string($config)) {
             $pluginConfigPath = $container->get('config')['plugin_config_path'];
