@@ -2,31 +2,15 @@
 
 namespace Mxc\Shopware\Plugin\Database;
 
-use Mxc\Shopware\Plugin\Service\LoggerInterface;
-use Shopware\Components\Model\ModelManager;
+use Mxc\Shopware\Plugin\Service\LoggerAwareInterface;
+use Mxc\Shopware\Plugin\Service\LoggerAwareTrait;
+use Mxc\Shopware\Plugin\Service\ModelManagerAwareInterface;
+use Mxc\Shopware\Plugin\Service\ModelManagerAwareTrait;
 
-class BulkOperation
+class BulkOperation implements LoggerAwareInterface, ModelManagerAwareInterface
 {
-    /**
-     * @var LoggerInterface $log
-     */
-    protected $log;
-    /**
-     * @var ModelManager $modelManager
-     */
-    protected $modelManager;
-
-    /**
-     * BulkOperation constructor.
-     *
-     * @param ModelManager $modelManager
-     * @param LoggerInterface $log
-     */
-    public function __construct(ModelManager $modelManager, LoggerInterface $log)
-    {
-        $this->modelManager = $modelManager;
-        $this->log = $log;
-    }
+    use ModelManagerAwareTrait;
+    use LoggerAwareTrait;
 
     public function update(array $filter)
     {

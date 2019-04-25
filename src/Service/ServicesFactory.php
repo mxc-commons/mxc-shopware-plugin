@@ -3,6 +3,7 @@
 namespace Mxc\Shopware\Plugin\Service;
 
 use Interop\Container\ContainerInterface;
+use Mxc\Shopware\Plugin\Database\BulkOperation;
 use Mxc\Shopware\Plugin\Database\SchemaManager;
 use Mxc\Shopware\Plugin\Shopware\AttributeManagerFactory;
 use Mxc\Shopware\Plugin\Shopware\AuthServiceFactory;
@@ -44,6 +45,7 @@ class ServicesFactory implements FactoryInterface
 
             // services
             Logger::class               => LoggerServiceFactory::class,
+            BulkOperation::class        => AugmentedObjectFactory::class,
 
         ],
         'magicals' => [

@@ -7,17 +7,17 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
 use Mxc\Shopware\Plugin\ActionListener;
-use Mxc\Shopware\Plugin\Service\LoggerInterface;
+use Mxc\Shopware\Plugin\Service\LoggerAwareInterface;
+use Mxc\Shopware\Plugin\Service\LoggerAwareTrait;
+use Mxc\Shopware\Plugin\Service\ModelManagerAwareInterface;
+use Mxc\Shopware\Plugin\Service\ModelManagerAwareTrait;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
-use Shopware\Components\Model\ModelManager;
 use Zend\EventManager\EventInterface;
 
-class SchemaManager extends ActionListener
+class SchemaManager extends ActionListener implements LoggerAwareInterface, ModelManagerAwareInterface
 {
-    /**
-     * @var ModelManager $modelManager
-     */
-    protected $modelManager;
+    use LoggerAwareTrait;
+    use ModelManagerAwareTrait;
 
     /**
      * @var CrudService $attributeService
@@ -35,11 +35,6 @@ class SchemaManager extends ActionListener
     protected $schemaTool;
 
     /**
-     * @var LoggerInterface $log
-     */
-    protected $log;
-
-    /**
      * @var array $attributes
      */
     protected $attributes = [];
@@ -55,19 +50,13 @@ class SchemaManager extends ActionListener
     /**
      * @param array $models
      * @param array $attributes
-     * @param ModelManager $modelManager
      * @param CrudService $attributeService
-     * @param LoggerInterface $log
      */
     public function __construct(
         array $models,
         array $attributes,
-        ModelManager $modelManager,
-        CrudService $attributeService,
-        LoggerInterface $log
+        CrudService $attributeService
     ) {
-        $this->log = $log;
-        $this->modelManager = $modelManager;
         $this->metaDataCache = $this->modelManager->getConfiguration()->getMetadataCacheImpl();
         $this->schemaTool = new SchemaTool($this->modelManager);
         $this->attributeService = $attributeService;

@@ -13,7 +13,7 @@
     "source" : "https://github.com/mxc-commons/mxc-shopware-plugin"
   },
   "require" : {
-    "php" : "^7.1",
+    "php" : "^7.2",
     "zendframework/zend-log" : "~2.10",
     "zendframework/zend-eventmanager" : "~3.2",
     "zendframework/zend-config" : "~3.2",

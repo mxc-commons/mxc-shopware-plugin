@@ -15,6 +15,7 @@ trait ClassConfigTrait
             $pluginConfigPath = $container->get('config')['plugin_config_path'];
             $configFile = $pluginConfigPath . '/' . $config;
             if (! file_exists($configFile)) return [];
+            /** @noinspection PhpIncludeInspection */
             $config = include $configFile;
         }
 

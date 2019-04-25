@@ -3,10 +3,12 @@
 namespace Mxc\Shopware\Plugin\Database;
 
 use Interop\Container\ContainerInterface;
+use Mxc\Shopware\Plugin\Service\ObjectAugmentationTrait;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
 class SchemaManagerFactory implements FactoryInterface
 {
+    use ObjectAugmentationTrait;
     /**
      * Create an object
      *
@@ -20,14 +22,10 @@ class SchemaManagerFactory implements FactoryInterface
         $config = $container->get('config');
         $models = $config['doctrine']['models'] ?? [];
         $attributes = $config['doctrine']['attributes'] ?? [];
-        $modelManager = $container->get('modelManager');
         $attributeManager = $container->get('attributeManager');
-        $logger = $container->get('logger');
-        return new SchemaManager(
+        return $this->augment($container, new SchemaManager(
             $models,
             $attributes,
-            $modelManager,
-            $attributeManager,
-            $logger);
+            $attributeManager));
     }
 }
