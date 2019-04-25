@@ -51,14 +51,18 @@ class SchemaManager extends ActionListener implements LoggerAwareInterface, Mode
      * @param array $models
      * @param array $attributes
      * @param CrudService $attributeService
+     * @param SchemaTool $schemaTool
+     * @param CacheProvider $metaDataCache
      */
     public function __construct(
         array $models,
         array $attributes,
-        CrudService $attributeService
+        CrudService $attributeService,
+        SchemaTool $schemaTool,
+        CacheProvider $metaDataCache
     ) {
-        $this->metaDataCache = $this->modelManager->getConfiguration()->getMetadataCacheImpl();
-        $this->schemaTool = new SchemaTool($this->modelManager);
+        $this->metaDataCache = $metaDataCache;
+        $this->schemaTool = $schemaTool;
         $this->attributeService = $attributeService;
         $this->models = $models;
         $this->attributes = $attributes;
