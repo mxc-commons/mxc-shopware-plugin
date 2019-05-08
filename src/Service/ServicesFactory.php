@@ -28,6 +28,10 @@ class ServicesFactory implements FactoryInterface
      * @var string $configPath
      */
     protected $configPath;
+
+    /** @var ServiceManager */
+    private static $services = null;
+
     /**
      * @var string $pluginName
      */
@@ -126,6 +130,8 @@ class ServicesFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
+        if (self::$services) return self::$services;
+
         $services = new ServiceManager($this->serviceConfig);
         $path = $this->getConfigPath();
         $pluginConfigFile = $path . '/plugin.config.php';
@@ -140,6 +146,8 @@ class ServicesFactory implements FactoryInterface
         $services->setService('events', new EventManager());
         $services->setService('services', $services);
         $services->setAllowOverride(false);
+
+        self::$services = $services;
         return $services;
     }
 }
