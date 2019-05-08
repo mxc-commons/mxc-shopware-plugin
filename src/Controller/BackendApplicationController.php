@@ -43,7 +43,7 @@ class BackendApplicationController extends Shopware_Controllers_Backend_Applicat
     public function detailAction()
     {
         try {
-            parent::listAction();
+            parent::detailAction();
         } catch (Throwable $e) {
             $this->handleException($e);
         }
