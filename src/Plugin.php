@@ -5,7 +5,7 @@ namespace Mxc\Shopware\Plugin;
 use Interop\Container\ContainerInterface;
 use Mxc\Shopware\Plugin\Database\AttributeManager;
 use Mxc\Shopware\Plugin\Database\SchemaManager;
-use Mxc\Shopware\Plugin\Service\ServicesFactory;
+use Mxc\Shopware\Plugin\Service\ServicesTrait;
 use Shopware\Components\Plugin as Base;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
@@ -14,12 +14,11 @@ use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Plugin\Context\UpdateContext;
 use Throwable;
 use Zend\EventManager\EventManagerInterface;
-use Zend\ServiceManager\ServiceManager;
 
 class Plugin extends Base
 {
-    protected $pluginName;
-    protected $pluginConfig;
+    use ServicesTrait;
+
     protected $services;
 
     /**
@@ -100,17 +99,4 @@ class Plugin extends Base
     {
         $this->trigger($this, __FUNCTION__, $context);
     }
-
-    protected function getServices() {
-        if (null === $this->services) {
-            $services = new ServiceManager([
-                'factories' => [
-                    'services' => ServicesFactory::class,
-                ],
-            ]);
-            $this->services = $services->build('services', ['pluginName' => $this->pluginName, 'pluginConfig' => $this->pluginConfig]);
-        }
-        return $this->services;
-    }
-
 }

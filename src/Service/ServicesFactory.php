@@ -24,9 +24,6 @@ use Zend\ServiceManager\ServiceManager;
 
 class ServicesFactory implements FactoryInterface
 {
-    protected $pluginName;
-    protected $pluginConfig;
-
     private $serviceConfig = [
         'factories' => [
             // shopware service interface
@@ -62,14 +59,14 @@ class ServicesFactory implements FactoryInterface
         return ($toLowerCase($toUnderScore($pluginClass)));
     }
 
-    protected function getLoggerConfig() {
+    protected function getLoggerConfig(string $pluginName) {
         return [
             'writers' => [
                 'stream' => [
                     'name' => 'stream',
                     'priority'  => Logger::ALERT,
                     'options'   => [
-                        'stream'    => Shopware()->DocPath() . 'var/log/' . $this->getLogFileName($this->pluginName) . '-' . date('Y-m-d') . '.log',
+                        'stream'    => Shopware()->DocPath() . 'var/log/' . $this->getLogFileName($pluginName) . '-' . date('Y-m-d') . '.log',
                         'formatter' => [
                             'name'      => Simple::class,
                             'options'   => [
@@ -103,11 +100,9 @@ class ServicesFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $services = new ServiceManager($this->serviceConfig);
-        $this->pluginName = $options['pluginName'];
-        $this->pluginConfig = $options['pluginConfig'];
-        $config = file_exists($this->pluginConfig) ? Factory::fromFile($this->pluginConfig) : [];
+        $config = file_exists(MXC_PLUGIN_CONFIG) ? Factory::fromFile(MXC_PLUGIN_CONFIG) : [];
         if (! isset($config['log'])) {
-            $config['log'] = $this->getLoggerConfig();
+            $config['log'] = $this->getLoggerConfig(MXC_PLUGIN_NAME);
         }
         $services->setAllowOverride(true);
         $services->configure($config['services'] ?? []);
