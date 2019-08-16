@@ -7,16 +7,13 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
 use Mxc\Shopware\Plugin\ActionListener;
-use Mxc\Shopware\Plugin\Service\LoggerAwareInterface;
-use Mxc\Shopware\Plugin\Service\LoggerAwareTrait;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareInterface;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareTrait;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
 use Zend\EventManager\EventInterface;
 
-class SchemaManager extends ActionListener implements LoggerAwareInterface, ModelManagerAwareInterface
+class SchemaManager extends ActionListener implements ModelManagerAwareInterface
 {
-    use LoggerAwareTrait;
     use ModelManagerAwareTrait;
 
     /**
@@ -43,9 +40,6 @@ class SchemaManager extends ActionListener implements LoggerAwareInterface, Mode
      */
     protected $models = [];
 
-    // unique MxcDropShipInnocigs attribute name prefix
-    const ATTR_PREFIX = 'mxc_ds_inno_';
-
     /** @noinspection PhpMissingParentConstructorInspection */
     /**
      * @param array $models
@@ -69,27 +63,50 @@ class SchemaManager extends ActionListener implements LoggerAwareInterface, Mode
     }
 
     /**
-     * Add/Update the attributes defined in the §attributes member to the database schema
+     * Adds attributes and tables to the database schema
+     *
+     * @param EventInterface $e
+     * @return bool
+     * @throws Exception
      */
-    protected function updateAttributes() {
-        foreach ($this->attributes as $table => $attributes) {
-            foreach ($attributes as $name => $config) {
-                try {
-                    $this->attributeService->update(
-                        $table,
-                        $name,
-                        $config['type'],
-                        $config['settings'] ?? [],
-                        $config['newColumnName'] ?? null,
-                        $config['updateDependingTables'] ?? false,
-                        $config['defaultValue'] ?? null);
-                } catch (Exception $e) {
-                    /** @noinspection PhpUnhandledExceptionInspection */
-                    throw new Exception('Attribute service failed to create attributes: ' . $e->getMessage());
-                }
-            }
+    public function install(/** @noinspection PhpUnusedParameterInspection */ EventInterface $e) {
+        $this->create();
+        return true;
+    }
+
+    /**
+     * Removes attributes and tables from the database schema
+     * @param EventInterface $e
+     * @return bool
+     */
+    public function uninstall(EventInterface $e) {
+        $context = $e->getParam('context');
+        if (! $context->keepUserData()) $this->drop();
+        return true;
+    }
+
+    public function create() {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $this->updateSchema();
+    }
+
+    public function drop() {
+        $this->schemaTool->dropSchema(
+            $this->getDropSchemaMetaData()
+        );
+    }
+
+    public function updateSchema()
+    {
+        $metaData = [];
+        foreach ($this->models as $model) {
+            $metaData[] = $this->modelManager->getClassMetadata($model);
         }
-        $this->updateModel();
+
+        $this->schemaTool->updateSchema(
+            $metaData,
+            true
+        );
     }
 
     /**
@@ -112,84 +129,9 @@ class SchemaManager extends ActionListener implements LoggerAwareInterface, Mode
         $connection->query('SET FOREIGN_KEY_CHECKS=1');
     }
 
-    /**
-     * Delete the attributes defined in the §attributes member from the database schema
-     */
-    protected function dropAttributes() {
-        foreach ($this->attributes as $table => $attributes) {
-            $names = array_keys($attributes);
-            foreach ($names as $name) {
-                try {
-                    $this->attributeService->delete($table, $name);
-                } catch (Exception $e) {
-                    // ignore attribute did not exist
-                }
-            }
-        }
-        $this->updateModel();
-        return true;
-    }
-
     protected function updateModel() {
         $this->metaDataCache->deleteAll();
         $this->modelManager->generateAttributeModels(array_keys($this->attributes));
-    }
-
-    /**
-     * Adds attributes and tables to the database schema
-     *
-     * @param EventInterface $e
-     * @return bool
-     * @throws Exception
-     */
-    public function install(/** @noinspection PhpUnusedParameterInspection */ EventInterface $e) {
-        $this->log->enter();
-        $this->create();
-        $this->log->leave();
-        return true;
-    }
-
-    public function updateSchema()
-    {
-        $metaData = [];
-        foreach ($this->models as $model) {
-            $metaData[] = $this->modelManager->getClassMetadata($model);
-        }
-
-        $this->schemaTool->updateSchema(
-            $metaData,
-            true
-        );
-    }
-
-    public function create() {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $this->updateAttributes();
-        $this->updateSchema();
-    }
-
-    public function drop() {
-        $this->schemaTool->dropSchema(
-            $this->getDropSchemaMetaData()
-        );
-        $this->dropAttributes();
-    }
-
-    /**
-     * Removes attributes and tables from the database schema
-     * @param EventInterface $e
-     * @return bool
-     */
-    public function uninstall(EventInterface $e) {
-        $this->log->enter();
-        $context = $e->getParam('context');
-
-        if (! $context->keepUserData()) {
-            $this->drop();
-        }
-
-        $this->log->leave();
-        return true;
     }
 
     /**

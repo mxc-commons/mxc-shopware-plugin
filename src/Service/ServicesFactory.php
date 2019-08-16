@@ -3,15 +3,15 @@
 namespace Mxc\Shopware\Plugin\Service;
 
 use Interop\Container\ContainerInterface;
+use Mxc\Shopware\Plugin\Database\AttributeManager;
 use Mxc\Shopware\Plugin\Database\BulkOperation;
 use Mxc\Shopware\Plugin\Database\SchemaManager;
-use Mxc\Shopware\Plugin\Shopware\AttributeManagerFactory;
 use Mxc\Shopware\Plugin\Shopware\AuthServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ConfigurationFactory;
+use Mxc\Shopware\Plugin\Shopware\CrudServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\DbalConnectionFactory;
 use Mxc\Shopware\Plugin\Shopware\MediaServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ModelManagerFactory;
-use ReflectionClass;
 use Zend\Config\Factory;
 use Zend\EventManager\EventManager;
 use Zend\Filter\StringToLower;
@@ -24,24 +24,14 @@ use Zend\ServiceManager\ServiceManager;
 
 class ServicesFactory implements FactoryInterface
 {
-    /**
-     * @var string $configPath
-     */
-    protected $configPath;
-
-    /** @var ServiceManager */
-    private static $services = null;
-
-    /**
-     * @var string $pluginName
-     */
     protected $pluginName;
+    protected $pluginConfig;
 
     private $serviceConfig = [
         'factories' => [
             // shopware service interface
             'dbalConnection'            => DbalConnectionFactory::class,
-            'attributeManager'          => AttributeManagerFactory::class,
+            'attributeCrudService'      => CrudServiceFactory::class,
             'mediaManager'              => MediaServiceFactory::class,
             'modelManager'              => ModelManagerFactory::class,
             'shopwareConfig'            => ConfigurationFactory::class,
@@ -53,7 +43,8 @@ class ServicesFactory implements FactoryInterface
 
         ],
         'magicals' => [
-            SchemaManager::class
+            SchemaManager::class,
+            AttributeManager::class,
         ],
         'delegators' => [
             Logger::class => [
@@ -101,25 +92,6 @@ class ServicesFactory implements FactoryInterface
         ];
     }
 
-    protected function getConfigPath() {
-        if (null === $this->configPath) {
-            $this->configPath = '';
-            $class = strpos(get_class($this), '_Proxies_') > 2 ? get_parent_class($this) : get_class($this);
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $reflected = new ReflectionClass($class);
-            $path = dirname($reflected->getFileName());
-            $pattern = Shopware()->DocPath() . 'custom/plugins/';
-            $pos = strpos($path, $pattern);
-            if ($pos !== 0) return $this->configPath; // error
-            $pLen = strlen($pattern);
-            $pos = strpos($path, DIRECTORY_SEPARATOR, $pLen);
-            if ($pos === false) return $this->configPath; // error
-            $this->pluginName = substr($path, $pLen, $pos - $pLen);
-            $this->configPath = substr($path,0, $pos);
-        }
-        return $this->configPath . '/Config';
-    }
-
     /**
      * Create an object
      *
@@ -130,13 +102,10 @@ class ServicesFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        if (self::$services) return self::$services;
-
         $services = new ServiceManager($this->serviceConfig);
-        $path = $this->getConfigPath();
-        $pluginConfigFile = $path . '/plugin.config.php';
-        $config = file_exists($pluginConfigFile) ? Factory::fromFile($pluginConfigFile) : [];
-        $config['plugin_config_path'] = $path;
+        $this->pluginName = $options['pluginName'];
+        $this->pluginConfig = $options['pluginConfig'];
+        $config = file_exists($this->pluginConfig) ? Factory::fromFile($this->pluginConfig) : [];
         if (! isset($config['log'])) {
             $config['log'] = $this->getLoggerConfig();
         }
@@ -147,7 +116,6 @@ class ServicesFactory implements FactoryInterface
         $services->setService('services', $services);
         $services->setAllowOverride(false);
 
-        self::$services = $services;
         return $services;
     }
 }

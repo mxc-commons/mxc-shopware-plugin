@@ -3,8 +3,9 @@
 namespace Mxc\Shopware\Plugin;
 
 use Interop\Container\ContainerInterface;
+use Mxc\Shopware\Plugin\Database\AttributeManager;
 use Mxc\Shopware\Plugin\Database\SchemaManager;
-use Mxc\Shopware\Plugin\Service\ServicesTrait;
+use Mxc\Shopware\Plugin\Service\ServicesFactory;
 use Shopware\Components\Plugin as Base;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
@@ -13,20 +14,26 @@ use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Plugin\Context\UpdateContext;
 use Throwable;
 use Zend\EventManager\EventManagerInterface;
+use Zend\ServiceManager\ServiceManager;
 
 class Plugin extends Base
 {
-    use ServicesTrait;
+    protected $pluginName;
+    protected $pluginConfig;
+    protected $services;
 
     /**
      * @param string $function
      * @param ContainerInterface $services
      * @return mixed|EventManagerInterface
      */
-    protected function attachListeners(string $function, ContainerInterface $services) {
+    private function attachListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
         $events = $services->get('events');
-        $listeners = isset($config['doctrine']['models']) ? [SchemaManager::class]: [];
+        $listeners = is_array($config['doctrine']['models']) ? [SchemaManager::class]: [];
+        if (is_array($config['doctrine']['attributes'])) {
+            $listeners[] = AttributeManager::class;
+        }
         $addlListeners = $config['plugin'] ?? [];
         foreach ($addlListeners as $listener) {
             $listeners[] = $listener;
@@ -93,4 +100,17 @@ class Plugin extends Base
     {
         $this->trigger($this, __FUNCTION__, $context);
     }
+
+    protected function getServices() {
+        if (null === $this->services) {
+            $services = new ServiceManager([
+                'factories' => [
+                    'services' => ServicesFactory::class,
+                ],
+            ]);
+            $this->services = $services->build('services', ['pluginName' => $this->pluginName, 'pluginConfig' => $this->pluginConfig]);
+        }
+        return $this->services;
+    }
+
 }
