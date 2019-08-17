@@ -16,8 +16,6 @@ use Zend\EventManager\EventManagerInterface;
 
 class Plugin extends Base
 {
-    protected $services;
-
     /**
      * @param string $function
      * @param ContainerInterface $services
@@ -54,7 +52,7 @@ class Plugin extends Base
      * @param $param
      */
     private function trigger(Plugin $plugin, string $function, $param) {
-        $services = $this->getServices();
+        $services = $plugin->getServices();
         try {
             $services->setAllowOverride(true);
             $services->setService('plugin', $plugin);
