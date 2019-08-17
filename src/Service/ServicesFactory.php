@@ -89,7 +89,8 @@ class ServicesFactory
 
     public function getServices(string $pluginDir) {
         $pluginName = substr(strrchr($pluginDir, '/'), 1);
-        $configFile = $pluginDir . '/Config/plugin.config.php';
+        $configDir = $pluginDir . '/Config';
+        $configFile = $configDir . '/plugin.config.php';
         $services = new ServiceManager($this->serviceConfig);
         $config = file_exists($configFile) ? Factory::fromFile($configFile) : [];
         if (! isset($config['log'])) {
@@ -97,6 +98,7 @@ class ServicesFactory
         }
         $services->setAllowOverride(true);
         $services->configure($config['services'] ?? []);
+        $config['plugin_config_path'] = $configDir;
         $services->setService('config', $config);
         $services->setService('events', new EventManager());
         $services->setService('services', $services);
