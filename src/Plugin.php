@@ -5,7 +5,6 @@ namespace Mxc\Shopware\Plugin;
 use Interop\Container\ContainerInterface;
 use Mxc\Shopware\Plugin\Database\AttributeManager;
 use Mxc\Shopware\Plugin\Database\SchemaManager;
-use Mxc\Shopware\Plugin\Service\ServicesTrait;
 use Shopware\Components\Plugin as Base;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
@@ -17,8 +16,6 @@ use Zend\EventManager\EventManagerInterface;
 
 class Plugin extends Base
 {
-    use ServicesTrait;
-
     protected $services;
 
     /**

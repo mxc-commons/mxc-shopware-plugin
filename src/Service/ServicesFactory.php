@@ -2,7 +2,6 @@
 
 namespace Mxc\Shopware\Plugin\Service;
 
-use Interop\Container\ContainerInterface;
 use Mxc\Shopware\Plugin\Database\AttributeManager;
 use Mxc\Shopware\Plugin\Database\BulkOperation;
 use Mxc\Shopware\Plugin\Database\SchemaManager;
@@ -19,10 +18,9 @@ use Zend\Filter\Word\CamelCaseToUnderscore;
 use Zend\Log\Formatter\Simple;
 use Zend\Log\Logger;
 use Zend\Log\LoggerServiceFactory;
-use Zend\ServiceManager\Factory\FactoryInterface;
 use Zend\ServiceManager\ServiceManager;
 
-class ServicesFactory implements FactoryInterface
+class ServicesFactory
 {
     private $serviceConfig = [
         'factories' => [
@@ -89,20 +87,13 @@ class ServicesFactory implements FactoryInterface
         ];
     }
 
-    /**
-     * Create an object
-     *
-     * @param ContainerInterface $container
-     * @param  string $requestedName
-     * @param  null|array $options
-     * @return object
-     */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
-    {
+    public function getServices(string $pluginDir) {
+        $pluginName = substr(strrchr($pluginDir, '/'), 1);
+        $configFile = $pluginDir . '/Config/plugin.config.php';
         $services = new ServiceManager($this->serviceConfig);
-        $config = file_exists(MXC_PLUGIN_CONFIG) ? Factory::fromFile(MXC_PLUGIN_CONFIG) : [];
+        $config = file_exists($configFile) ? Factory::fromFile($configFile) : [];
         if (! isset($config['log'])) {
-            $config['log'] = $this->getLoggerConfig(MXC_PLUGIN_NAME);
+            $config['log'] = $this->getLoggerConfig($pluginName);
         }
         $services->setAllowOverride(true);
         $services->configure($config['services'] ?? []);
@@ -112,5 +103,6 @@ class ServicesFactory implements FactoryInterface
         $services->setAllowOverride(false);
 
         return $services;
+
     }
 }
