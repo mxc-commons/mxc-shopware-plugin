@@ -16,6 +16,12 @@ use Zend\EventManager\EventManagerInterface;
 
 class Plugin extends Base
 {
+    protected $installClearCache;
+    protected $uninstallClearCache;
+    protected $activateClearCache;
+    protected $deactivateClearCache;
+    protected $updateClearCache;
+
     /**
      * @param string $function
      * @param ContainerInterface $services
@@ -74,24 +80,39 @@ class Plugin extends Base
     public function install(InstallContext $context)
     {
         $this->trigger($this, __FUNCTION__, $context);
+        if ($this->installClearCache !== null) {
+            $context->scheduleClearCache($this->installClearCache);
+        }
     }
 
     public function uninstall(UninstallContext $context)
     {
         $this->trigger($this, __FUNCTION__, $context);
+        if ($this->uninstallClearCache !== null) {
+            $context->scheduleClearCache($this->uninstallClearCache);
+        }
     }
 
     public function update(UpdateContext $context) {
         $this->trigger($this, __FUNCTION__, $context);
+        if ($this->updateClearCache !== null) {
+            $context->scheduleClearCache($this->updateClearCache);
+        }
     }
 
     public function activate(ActivateContext $context)
     {
         $this->trigger($this, __FUNCTION__, $context);
+        if ($this->activateClearCache !== null) {
+            $context->scheduleClearCache($this->activateClearCache);
+        }
     }
 
     public function deactivate(DeactivateContext $context)
     {
         $this->trigger($this, __FUNCTION__, $context);
+        if ($this->deactivateClearCache !== null) {
+            $context->scheduleClearCache($this->deactivateClearCache);
+        }
     }
 }
