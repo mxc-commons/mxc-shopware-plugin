@@ -79,8 +79,6 @@ class BackendApplicationController extends Shopware_Controllers_Backend_Applicat
     }
 
     protected function handleException(Throwable $e, bool $rethrow = false) {
-        $this->getLog()->except($e, true, $rethrow);
         $this->view->assign([ 'success' => false, 'message' => $e->getMessage() ]);
     }
-
 }
