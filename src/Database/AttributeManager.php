@@ -5,7 +5,6 @@ namespace Mxc\Shopware\Plugin\Database;
 use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
-use Mxc\Shopware\Plugin\ActionListener;
 use Mxc\Shopware\Plugin\Service\LoggerAwareInterface;
 use Mxc\Shopware\Plugin\Service\LoggerAwareTrait;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareInterface;
@@ -18,7 +17,7 @@ use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Plugin\Context\UpdateContext;
 
 
-class AttributeManager extends ActionListener implements LoggerAwareInterface, ModelManagerAwareInterface
+class AttributeManager implements LoggerAwareInterface, ModelManagerAwareInterface
 {
     use LoggerAwareTrait;
     use ModelManagerAwareTrait;

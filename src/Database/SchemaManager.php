@@ -6,7 +6,6 @@ use Doctrine\Common\Cache\CacheProvider;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
-use Mxc\Shopware\Plugin\ActionListener;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareInterface;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareTrait;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
@@ -14,7 +13,7 @@ use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 
 
-class SchemaManager extends ActionListener implements ModelManagerAwareInterface
+class SchemaManager implements ModelManagerAwareInterface
 {
     use ModelManagerAwareTrait;
 
