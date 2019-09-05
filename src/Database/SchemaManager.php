@@ -10,7 +10,9 @@ use Mxc\Shopware\Plugin\ActionListener;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareInterface;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareTrait;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
-use Zend\EventManager\EventInterface;
+use Shopware\Components\Plugin\Context\InstallContext;
+use Shopware\Components\Plugin\Context\UninstallContext;
+
 
 class SchemaManager extends ActionListener implements ModelManagerAwareInterface
 {
@@ -65,22 +67,21 @@ class SchemaManager extends ActionListener implements ModelManagerAwareInterface
     /**
      * Adds attributes and tables to the database schema
      *
-     * @param EventInterface $e
+     * @param InstallContext
      * @return bool
      * @throws Exception
      */
-    public function install(/** @noinspection PhpUnusedParameterInspection */ EventInterface $e) {
+    public function install(/** @noinspection PhpUnusedParameterInspection */ InstallContext $c) {
         $this->create();
         return true;
     }
 
     /**
      * Removes attributes and tables from the database schema
-     * @param EventInterface $e
+     * @param UninstallContext $e
      * @return bool
      */
-    public function uninstall(EventInterface $e) {
-        $context = $e->getParam('context');
+    public function uninstall(UninstallContext $context) {
         if (! $context->keepUserData()) $this->drop();
         return true;
     }

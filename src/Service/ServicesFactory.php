@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpIncludeInspection */
 
 namespace Mxc\Shopware\Plugin\Service;
 
@@ -11,10 +11,7 @@ use Mxc\Shopware\Plugin\Shopware\CrudServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\DbalConnectionFactory;
 use Mxc\Shopware\Plugin\Shopware\MediaServiceFactory;
 use Mxc\Shopware\Plugin\Shopware\ModelManagerFactory;
-use Zend\Config\Factory;
-use Zend\EventManager\EventManager;
-use Zend\Filter\StringToLower;
-use Zend\Filter\Word\CamelCaseToUnderscore;
+use Mxc\Shopware\Plugin\Utility\StringUtility;
 use Zend\Log\Formatter\Simple;
 use Zend\Log\Logger;
 use Zend\Log\LoggerServiceFactory;
@@ -52,9 +49,7 @@ class ServicesFactory
     ];
 
     protected function getLogFileName(string $pluginClass) {
-        $toUnderScore = new CamelCaseToUnderscore();
-        $toLowerCase = new StringToLower();
-        return ($toLowerCase($toUnderScore($pluginClass)));
+        return strtolower(StringUtility::camelCaseToUnderscore($pluginClass));
     }
 
     protected function getLoggerConfig(string $pluginName) {
@@ -92,7 +87,10 @@ class ServicesFactory
         $configDir = $pluginDir . '/Config';
         $configFile = $configDir . '/plugin.config.php';
         $services = new ServiceManager($this->serviceConfig);
-        $config = file_exists($configFile) ? Factory::fromFile($configFile) : [];
+        $config = [];
+        if (file_exists($configFile)) {
+            $config = include $configFile;
+        }
         if (! isset($config['log'])) {
             $config['log'] = $this->getLoggerConfig($pluginName);
         }
@@ -100,7 +98,6 @@ class ServicesFactory
         $services->configure($config['services'] ?? []);
         $config['plugin_config_path'] = $configDir;
         $services->setService('config', $config);
-        $services->setService('events', new EventManager());
         $services->setService('services', $services);
         $services->setAllowOverride(false);
 

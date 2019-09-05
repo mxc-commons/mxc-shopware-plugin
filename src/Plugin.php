@@ -12,7 +12,6 @@ use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Plugin\Context\UpdateContext;
 use Throwable;
-use Zend\EventManager\EventManagerInterface;
 
 class Plugin extends Base
 {
@@ -25,94 +24,98 @@ class Plugin extends Base
     /**
      * @param string $function
      * @param ContainerInterface $services
-     * @return mixed|EventManagerInterface
+     * @return array
      */
-    private function attachListeners(string $function, ContainerInterface $services) {
+    private function getListeners(string $function, ContainerInterface $services) {
         $config = $services->get('config');
-        $events = $services->get('events');
         $listeners = is_array($config['doctrine']['models']) ? [SchemaManager::class]: [];
         if (is_array($config['doctrine']['attributes'])) {
             $listeners[] = AttributeManager::class;
         }
-        $addlListeners = $config['plugin'] ?? [];
-        foreach ($addlListeners as $listener) {
+        $customListeners = $config['plugin'] ?? [];
+        foreach ($customListeners as $listener) {
             $listeners[] = $listener;
         }
         // attach listeners in reverse order on uninstall and deactivate
         if ($function === 'uninstall' || $function === 'deactivate') {
             $listeners = array_reverse($listeners);
         }
+        $pluginListeners = [];
         foreach ($listeners as $service) {
-            if (! $services->has($service)) {
-                /** @noinspection PhpUndefinedMethodInspection */
-                $services->setFactory($service, ActionListenerFactory::class);
+            if ($services->has($service)) {
+                $pluginListeners[] = $services->get($service);
             }
-            $services->get($service)->attach($events);
         }
-        return $events;
+        return $pluginListeners;
     }
 
     /**
      * @param Plugin $plugin
      * @param string $function
      * @param $param
+     * @return bool
      */
     private function trigger(Plugin $plugin, string $function, $param) {
         $services = $plugin->getServices();
+        $result = true;
         try {
             $services->setAllowOverride(true);
             $services->setService('plugin', $plugin);
-            $events = $this->attachListeners($function, $services);
-            $services->setAllowOverride(false);
-            $events->triggerUntil(
-                function ($result) {
-                    return $result === false;
-                },
-                $function,
-                null,
-                ['context' => $param]
-            );
+            $pluginListeners = $this->getListeners($function, $services);
+            foreach ($pluginListeners as $listener) {
+                if (method_exists($listener, $function)) {
+                    $result = $listener->$function($param);
+                    if ($result === false) break;
+                }
+            }
         } catch (Throwable $e) {
             $services->get('logger')->except($e);
         }
+        return $result;
     }
 
     public function install(InstallContext $context)
     {
-        $this->trigger($this, __FUNCTION__, $context);
-        if ($this->installClearCache !== null) {
+        $result = $this->trigger($this, __FUNCTION__, $context);
+        if ($result === true && $this->installClearCache !== null) {
             $context->scheduleClearCache($this->installClearCache);
         }
+        return $result;
     }
 
     public function uninstall(UninstallContext $context)
     {
-        $this->trigger($this, __FUNCTION__, $context);
-        if ($this->uninstallClearCache !== null) {
+        $result = $this->trigger($this, __FUNCTION__, $context);
+        if ($result === true && $this->uninstallClearCache !== null) {
             $context->scheduleClearCache($this->uninstallClearCache);
         }
+        return $result;
     }
 
-    public function update(UpdateContext $context) {
-        $this->trigger($this, __FUNCTION__, $context);
-        if ($this->updateClearCache !== null) {
+    public function update(UpdateContext $context)
+    {
+        $result = $this->trigger($this, __FUNCTION__, $context);
+        if ($result === true && $this->updateClearCache !== null) {
             $context->scheduleClearCache($this->updateClearCache);
         }
+        return $result;
     }
 
     public function activate(ActivateContext $context)
     {
-        $this->trigger($this, __FUNCTION__, $context);
-        if ($this->activateClearCache !== null) {
+        $result = $this->trigger($this, __FUNCTION__, $context);
+        if ($result === true && $this->activateClearCache !== null) {
             $context->scheduleClearCache($this->activateClearCache);
         }
+        return $result;
     }
 
     public function deactivate(DeactivateContext $context)
     {
-        $this->trigger($this, __FUNCTION__, $context);
-        if ($this->deactivateClearCache !== null) {
+        $result = $this->trigger($this, __FUNCTION__, $context);
+        if ($result === true && $this->deactivateClearCache !== null) {
             $context->scheduleClearCache($this->deactivateClearCache);
         }
+        return $result;
     }
 }

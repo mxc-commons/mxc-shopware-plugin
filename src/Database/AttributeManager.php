@@ -11,7 +11,12 @@ use Mxc\Shopware\Plugin\Service\LoggerAwareTrait;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareInterface;
 use Mxc\Shopware\Plugin\Service\ModelManagerAwareTrait;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
-use Zend\EventManager\EventInterface;
+use Shopware\Components\Plugin\Context\ActivateContext;
+use Shopware\Components\Plugin\Context\DeactivateContext;
+use Shopware\Components\Plugin\Context\InstallContext;
+use Shopware\Components\Plugin\Context\UninstallContext;
+use Shopware\Components\Plugin\Context\UpdateContext;
+
 
 class AttributeManager extends ActionListener implements LoggerAwareInterface, ModelManagerAwareInterface
 {
@@ -60,25 +65,24 @@ class AttributeManager extends ActionListener implements LoggerAwareInterface, M
         $this->attributeService = $attributeService;
         $this->attributes = $attributes;
     }
+
     /**
      * Adds attributes and tables to the database schema
      *
-     * @param EventInterface $e
+     * @param InstallContext $c
      * @return bool
-     * @throws Exception
      */
-    public function install(/** @noinspection PhpUnusedParameterInspection */ EventInterface $e) {
+    public function install(/** @noinspection PhpUnusedParameterInspection */ InstallContext $c) {
         $this->create();
         return true;
     }
 
     /**
      * Removes attributes and tables from the database schema
-     * @param EventInterface $e
+     * @param UninstallContext $context
      * @return bool
      */
-    public function uninstall(EventInterface $e) {
-        $context = $e->getParam('context');
+    public function uninstall(UninstallContext $context) {
         if (! $context->keepUserData()) $this->drop();
         return true;
     }
